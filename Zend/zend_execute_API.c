@@ -43,6 +43,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef ZEND_TIMER
+#include <sys/syscall.h>
+#endif
 
 ZEND_API void (*zend_execute_ex)(zend_execute_data *execute_data);
 ZEND_API void (*zend_execute_internal)(zend_execute_data *execute_data, zval *return_value);
@@ -170,6 +173,9 @@ void init_executor(void) /* {{{ */
 	EG(full_tables_cleanup) = 0;
 	ZEND_ATOMIC_BOOL_INIT(&EG(vm_interrupt), false);
 	ZEND_ATOMIC_BOOL_INIT(&EG(timed_out), false);
+#ifdef ZEND_TIMER
+	zend_timer_create();
+#endif
 
 	EG(exception) = NULL;
 	EG(prev_exception) = NULL;
@@ -1359,8 +1365,27 @@ ZEND_API ZEND_NORETURN void ZEND_FASTCALL zend_timeout(void) /* {{{ */
 /* }}} */
 
 #ifndef ZEND_WIN32
+# ifdef ZEND_TIMER
+static void zend_timeout_handler(int dummy, siginfo_t *si, void *uc) /* {{{ */
+{
+	if (si->si_value.sival_ptr != &EG(timer)) {
+#ifdef TIMER_DEBUG
+		fprintf(stderr, "Executing previous handler (if set) for unexpected signal SIGIO received on thread %d\n", (pid_t) syscall(SYS_gettid));
+#endif
+
+		if (EG(oldact).sa_sigaction) {
+			EG(oldact).sa_sigaction(dummy, si, uc);
+
+			return;
+		}
+		if (EG(oldact).sa_handler) EG(oldact).sa_handler(dummy);
+
+		return;
+	}
+# else
 static void zend_timeout_handler(int dummy) /* {{{ */
 {
+# endif
 #ifndef ZTS
 	if (zend_atomic_bool_load_ex(&EG(timed_out))) {
 		/* Die on hard timeout */
@@ -1460,6 +1485,21 @@ static void zend_set_timeout_ex(zend_long seconds, bool reset_signals) /* {{{ */
 		zend_error_noreturn(E_ERROR, "Could not queue new timer");
 		return;
 	}
+#elif defined(ZEND_TIMER)
+	zend_timer_settime(seconds);
+
+	if (reset_signals) {
+		sigset_t sigset;
+		struct sigaction act;
+
+		act.sa_sigaction = zend_timeout_handler;
+		sigemptyset(&act.sa_mask);
+		act.sa_flags = SA_ONSTACK | SA_SIGINFO;
+		sigaction(SIGIO, &act, NULL);
+		sigemptyset(&sigset);
+		sigaddset(&sigset, SIGIO);
+		sigprocmask(SIG_UNBLOCK, &sigset, NULL);
+	}
 #elif defined(HAVE_SETITIMER)
 	{
 		struct itimerval t_r;		/* timeout requested */
@@ -1525,6 +1565,8 @@ void zend_unset_timeout(void) /* {{{ */
 		}
 		tq_timer = NULL;
 	}
+#elif ZEND_TIMER
+	zend_timer_settime(0);
 #elif defined(HAVE_SETITIMER)
 	if (EG(timeout_seconds)) {
 		struct itimerval no_timeout;

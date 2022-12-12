@@ -37,6 +37,7 @@
 #include "zend_multibyte.h"
 #include "zend_multiply.h"
 #include "zend_arena.h"
+#include "zend_timer.h"
 
 /* Define ZTS if you want a thread-safe Zend */
 /*#undef ZTS*/
@@ -270,6 +271,11 @@ struct _zend_executor_globals {
 	/* Override filename or line number of thrown errors and exceptions */
 	zend_string *filename_override;
 	zend_long lineno_override;
+
+#ifdef ZEND_TIMER
+	timer_t timer;
+	struct sigaction oldact;
+#endif
 
 	void *reserved[ZEND_MAX_RESERVED_RESOURCES];
 };

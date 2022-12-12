@@ -64,6 +64,7 @@
 #include "zend_execute.h"
 #include "zend_highlight.h"
 #include "zend_exceptions.h"
+#include "zend_timer.h"
 
 #include "php_getopt.h"
 
@@ -2462,6 +2463,10 @@ static void php_cli_server_startup_workers(void) {
 			} else if (pid == 0) {
 				return;
 			} else {
+#if ZEND_TIMER
+	zend_timer_create();
+#endif
+
 				php_cli_server_workers[php_cli_server_worker] = pid;
 			}
 		}
