@@ -64,7 +64,7 @@ ZEND_API zend_signal_globals_t zend_signal_globals;
 static void zend_signal_handler(int signo, siginfo_t *siginfo, void *context);
 static int zend_signal_register(int signo, void (*handler)(int, siginfo_t*, void*));
 
-#if defined(__CYGWIN__) || defined(__PASE__)
+#if defined(__CYGWIN__) || defined(__PASE__) || defined(NO_SIGPROF)
 /* Matches zend_execute_API.c; these platforms don't support ITIMER_PROF. */
 #define TIMEOUT_SIG SIGALRM
 #else
@@ -248,7 +248,7 @@ ZEND_API void zend_sigaction(int signo, const struct sigaction *act, struct siga
 		if (SIGG(handlers)[signo-1].handler == (void *) SIG_IGN) {
 			sa.sa_sigaction = (void *) SIG_IGN;
 		} else {
-			sa.sa_flags     = SA_SIGINFO | (act->sa_flags & SA_FLAGS_MASK);
+			sa.sa_flags     = SA_ONSTACK | SA_SIGINFO | (act->sa_flags & SA_FLAGS_MASK);
 			sa.sa_sigaction = zend_signal_handler_defer;
 			sa.sa_mask      = global_sigmask;
 		}
