@@ -272,6 +272,28 @@ fi
 AC_MSG_CHECKING(whether to enable zend signal handling)
 AC_MSG_RESULT($ZEND_SIGNALS)
 
+dnl By default, enable Zend Timers only for ZTS builds
+AC_ARG_ENABLE([zend-timer],
+  [AS_HELP_STRING([--enable-zend-timer],
+    [whether to enable zend timer])],
+    [ZEND_TIMERS=$enableval],
+    [ZEND_TIMERS=$ZEND_ZTS])
+
+AS_CASE(["$host_alias"], [*linux*], [], [ZEND_TIMERS='no'])
+
+PHP_CHECK_FUNC(timer_create, rt)
+if test "$ac_cv_func_timer_create" != "yes"; then
+  ZEND_TIMERS='no'
+fi
+
+if test "$ZEND_TIMERS" = "yes"; then
+  AC_DEFINE(ZEND_TIMERS, 1, [Use zend timer])
+  CFLAGS="$CFLAGS -DZEND_TIMERS"
+fi
+
+AC_MSG_CHECKING(whether to enable zend timer)
+AC_MSG_RESULT($ZEND_TIMERS)
+
 ])
 
 AC_MSG_CHECKING(whether /dev/urandom exists)
