@@ -89,7 +89,9 @@ zend_module_entry filter_module_entry = {
 	PHP_RSHUTDOWN(filter),
 	PHP_MINFO(filter),
 	PHP_FILTER_VERSION,
-	STANDARD_MODULE_PROPERTIES
+	NO_MODULE_GLOBALS,
+	NULL,
+	STANDARD_MODULE_PROPERTIES_REQUEST_HOOKS(NULL, PHP_REND(filter))
 };
 /* }}} */
 
@@ -192,6 +194,13 @@ PHP_RSHUTDOWN_FUNCTION(filter)
 	VAR_ARRAY_COPY_DTOR(server_array)
 	VAR_ARRAY_COPY_DTOR(env_array)
 	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_REND_FUNCTION */
+PHP_REND_FUNCTION(filter)
+{
+	return PHP_RSHUTDOWN(filter)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 }
 /* }}} */
 
