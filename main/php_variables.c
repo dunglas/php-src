@@ -820,6 +820,37 @@ PHPAPI zend_result php_hash_environment(void)
 }
 /* }}} */
 
+/* {{{ php_rehash_environment
+ * Superglobals already compiled into the running script are imported again,
+ * the others are armed for just in time creation. $_ENV comes from the process,
+ * not the request, so the script keeps it. */
+PHPAPI void php_rehash_environment(void)
+{
+	zend_auto_global *auto_global;
+
+	for (int i = 0; i < NUM_TRACK_VARS; i++) {
+		if (i == TRACK_VARS_ENV) {
+			continue;
+		}
+		zval_ptr_dtor(&PG(http_globals)[i]);
+		ZVAL_UNDEF(&PG(http_globals)[i]);
+	}
+
+	ZEND_HASH_MAP_FOREACH_PTR(CG(auto_globals), auto_global) {
+		if (auto_global->name == ZSTR_KNOWN(ZEND_STR_AUTOGLOBAL_ENV)) {
+			continue;
+		}
+		if (!auto_global->auto_global_callback) {
+			auto_global->armed = false;
+		} else if (!auto_global->jit || zend_hash_exists(&EG(symbol_table), auto_global->name)) {
+			auto_global->armed = auto_global->auto_global_callback(auto_global->name);
+		} else {
+			auto_global->armed = true;
+		}
+	} ZEND_HASH_FOREACH_END();
+}
+/* }}} */
+
 static bool php_auto_globals_create_get(zend_string *name)
 {
 	if (PG(variables_order) && (strchr(PG(variables_order),'G') || strchr(PG(variables_order),'g'))) {
