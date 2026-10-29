@@ -1849,6 +1849,25 @@ PHPAPI void php_child_init(void)
 	php_clear_stat_cache(true, NULL, 0);
 }
 
+static void php_request_start_output(void)
+{
+	if (PG(expose_php) && !SG(headers_sent)) {
+		sapi_add_header(SAPI_PHP_VERSION_HEADER, sizeof(SAPI_PHP_VERSION_HEADER)-1, 1);
+	}
+
+	if (PG(output_handler)) {
+		zval oh;
+
+		ZVAL_STR(&oh, zend_string_dup(PG(output_handler), false));
+		php_output_start_user(&oh, 0, PHP_OUTPUT_HANDLER_STDFLAGS);
+		zval_ptr_dtor(&oh);
+	} else if (PG(output_buffering)) {
+		php_output_start_user(NULL, PG(output_buffering) > 1 ? PG(output_buffering) : 0, PHP_OUTPUT_HANDLER_STDFLAGS);
+	} else if (PG(implicit_flush)) {
+		php_output_set_implicit_flush(1);
+	}
+}
+
 /* {{{ php_request_startup */
 zend_result php_request_startup(void)
 {
@@ -1902,21 +1921,7 @@ zend_result php_request_startup(void)
 			CWDG(realpath_cache_size_limit) = 0;
 		}
 
-		if (PG(expose_php) && !SG(headers_sent)) {
-			sapi_add_header(SAPI_PHP_VERSION_HEADER, sizeof(SAPI_PHP_VERSION_HEADER)-1, 1);
-		}
-
-		if (PG(output_handler)) {
-			zval oh;
-
-			ZVAL_STR(&oh, zend_string_dup(PG(output_handler), false));
-			php_output_start_user(&oh, 0, PHP_OUTPUT_HANDLER_STDFLAGS);
-			zval_ptr_dtor(&oh);
-		} else if (PG(output_buffering)) {
-			php_output_start_user(NULL, PG(output_buffering) > 1 ? PG(output_buffering) : 0, PHP_OUTPUT_HANDLER_STDFLAGS);
-		} else if (PG(implicit_flush)) {
-			php_output_set_implicit_flush(1);
-		}
+		php_request_start_output();
 
 		/* We turn this off in php_execute_script() */
 		/* PG(during_request_startup) = 0; */
@@ -1936,6 +1941,66 @@ zend_result php_request_startup(void)
 	}
 
 	return retval;
+}
+/* }}} */
+
+/* {{{ php_request_begin
+ * Starts a new request in a script that served the previous one, such as a
+ * worker script. The SAPI must fill SG(request_info) and SG(server_context) first. */
+PHPAPI zend_result php_request_begin(void)
+{
+	zend_result retval = SUCCESS;
+
+	zend_try {
+		php_output_activate();
+
+		PG(header_is_being_sent) = 0;
+		PG(connection_status) = PHP_CONNECTION_NORMAL;
+
+		sapi_activate();
+
+		/* The script is already executing, there is no separate input phase */
+		zend_set_timeout(EG(timeout_seconds), 0);
+
+		php_request_start_output();
+		php_rehash_environment();
+		zend_request_begin_modules();
+	} zend_catch {
+		retval = FAILURE;
+	} zend_end_try();
+
+	return retval;
+}
+/* }}} */
+
+/* {{{ php_request_end
+ * Ends a request without ending the script serving it. */
+PHPAPI void php_request_end(void)
+{
+	php_stream *request_body = SG(request_info).request_body;
+
+	zend_try {
+		php_output_end_all();
+	} zend_end_try();
+
+	zend_try {
+		zend_unset_timeout();
+	} zend_end_try();
+
+	zend_request_end_modules();
+
+	zend_try {
+		php_output_deactivate();
+	} zend_end_try();
+
+	zend_try {
+		sapi_deactivate();
+	} zend_end_try();
+
+	/* sapi_deactivate() forgets the body without closing it */
+	if (request_body) {
+		zend_list_delete(request_body->res);
+	}
 }
 /* }}} */
 
