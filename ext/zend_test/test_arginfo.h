@@ -1,5 +1,5 @@
 /* This is a generated file, edit test.stub.php instead.
- * Stub hash: ea2674e5d5dbf60aa5efab31132064b52a07bddd
+ * Stub hash: d772f272fc88edea49a374bbf92e1e78a0db1a4f
  * Has decl header: yes */
 
 #include "zend_attributes.h"
@@ -18,6 +18,9 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_nullable_array_return,
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_void_return, 0, 0, IS_VOID, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_request_boundary, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_compile_string, 0, 3, IS_VOID, 0)
@@ -317,8 +320,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_override_libxml_global
 ZEND_END_ARG_INFO()
 #endif
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_is_pcre_bundled, 0, 0, _IS_BOOL, 0)
-ZEND_END_ARG_INFO()
+#define arginfo_zend_test_is_pcre_bundled arginfo_zend_test_request_boundary
 
 #if defined(PHP_WIN32)
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_set_fmode, 0, 1, IS_VOID, 0)
@@ -342,7 +344,7 @@ ZEND_END_ARG_INFO()
 
 #define arginfo_zend_test_gh18756 arginfo_zend_test_void_return
 
-#define arginfo_zend_test_opcache_preloading arginfo_zend_test_is_pcre_bundled
+#define arginfo_zend_test_opcache_preloading arginfo_zend_test_request_boundary
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_uri_parser, 0, 2, IS_ARRAY, 0)
 	ZEND_ARG_TYPE_INFO(0, uri, IS_STRING, 0)
@@ -359,7 +361,7 @@ ZEND_END_ARG_INFO()
 
 #define arginfo_zend_new_singleton_array arginfo_zend_test_array_return
 
-#define arginfo_ZendTestNS2_namespaced_func arginfo_zend_test_is_pcre_bundled
+#define arginfo_ZendTestNS2_namespaced_func arginfo_zend_test_request_boundary
 
 #define arginfo_ZendTestNS2_namespaced_deprecated_func arginfo_zend_test_void_return
 
@@ -367,7 +369,7 @@ ZEND_END_ARG_INFO()
 
 #define arginfo_ZendTestNS2_namespaced_deprecated_aliased_func arginfo_zend_test_void_return
 
-#define arginfo_ZendTestNS2_ZendSubNS_namespaced_func arginfo_zend_test_is_pcre_bundled
+#define arginfo_ZendTestNS2_ZendSubNS_namespaced_func arginfo_zend_test_request_boundary
 
 #define arginfo_ZendTestNS2_ZendSubNS_namespaced_deprecated_func arginfo_zend_test_void_return
 
@@ -407,9 +409,9 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_class__ZendTestChildClass_returnsThrowable, 0, 0, Exception, 0)
 ZEND_END_ARG_INFO()
 
-#define arginfo_class_ZendAttributeTest_testMethod arginfo_zend_test_is_pcre_bundled
+#define arginfo_class_ZendAttributeTest_testMethod arginfo_zend_test_request_boundary
 
-#define arginfo_class__ZendTestTrait_testMethod arginfo_zend_test_is_pcre_bundled
+#define arginfo_class__ZendTestTrait_testMethod arginfo_zend_test_request_boundary
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_class_ZendTestAttributeWithArguments___construct, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, arg, IS_MIXED, 0)
@@ -452,6 +454,7 @@ static ZEND_FUNCTION(zend_trigger_bailout);
 static ZEND_FUNCTION(zend_test_array_return);
 static ZEND_FUNCTION(zend_test_nullable_array_return);
 static ZEND_FUNCTION(zend_test_void_return);
+static ZEND_FUNCTION(zend_test_request_boundary);
 static ZEND_FUNCTION(zend_test_compile_string);
 static ZEND_FUNCTION(zend_test_deprecated);
 static ZEND_FUNCTION(zend_test_deprecated_attr);
@@ -600,6 +603,7 @@ static const zend_function_entry ext_functions[] = {
 #endif
 #endif
 	ZEND_FE(zend_test_void_return, arginfo_zend_test_void_return)
+	ZEND_FE(zend_test_request_boundary, arginfo_zend_test_request_boundary)
 	ZEND_FE(zend_test_compile_string, arginfo_zend_test_compile_string)
 #if (PHP_VERSION_ID >= 80400)
 	ZEND_RAW_FENTRY("zend_test_deprecated", zif_zend_test_deprecated, arginfo_zend_test_deprecated, ZEND_ACC_DEPRECATED, NULL, NULL)

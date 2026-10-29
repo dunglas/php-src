@@ -1,5 +1,5 @@
 /* This is a generated file, edit test.stub.php instead.
- * Stub hash: ea2674e5d5dbf60aa5efab31132064b52a07bddd
+ * Stub hash: d772f272fc88edea49a374bbf92e1e78a0db1a4f
  * Has decl header: yes */
 
 #include "zend_constants.h"
@@ -15,6 +15,8 @@ ZEND_END_ARG_INFO()
 #define arginfo_zend_test_nullable_array_return arginfo_zend_trigger_bailout
 
 #define arginfo_zend_test_void_return arginfo_zend_trigger_bailout
+
+#define arginfo_zend_test_request_boundary arginfo_zend_trigger_bailout
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_zend_test_compile_string, 0, 0, 3)
 	ZEND_ARG_INFO(0, source_string)
@@ -376,6 +378,7 @@ static ZEND_FUNCTION(zend_trigger_bailout);
 static ZEND_FUNCTION(zend_test_array_return);
 static ZEND_FUNCTION(zend_test_nullable_array_return);
 static ZEND_FUNCTION(zend_test_void_return);
+static ZEND_FUNCTION(zend_test_request_boundary);
 static ZEND_FUNCTION(zend_test_compile_string);
 static ZEND_FUNCTION(zend_test_deprecated);
 static ZEND_FUNCTION(zend_test_deprecated_attr);
@@ -516,6 +519,7 @@ static const zend_function_entry ext_functions[] = {
 	ZEND_FE(zend_test_array_return, arginfo_zend_test_array_return)
 	ZEND_FE(zend_test_nullable_array_return, arginfo_zend_test_nullable_array_return)
 	ZEND_FE(zend_test_void_return, arginfo_zend_test_void_return)
+	ZEND_FE(zend_test_request_boundary, arginfo_zend_test_request_boundary)
 	ZEND_FE(zend_test_compile_string, arginfo_zend_test_compile_string)
 #if (PHP_VERSION_ID >= 80400)
 	ZEND_RAW_FENTRY("zend_test_deprecated", zif_zend_test_deprecated, arginfo_zend_test_deprecated, ZEND_ACC_DEPRECATED, NULL, NULL)
